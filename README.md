@@ -1,7 +1,8 @@
 # Features:
-1. Self contained. 
+1. Read to use in a real project
 2. No redux involved => no need to think about your code structure
-
+3. Support signup, signin, forget password, reset passoword, logout
+4. Support signup verification, signin MFA
 
 # Run demo:
 1. npm install
