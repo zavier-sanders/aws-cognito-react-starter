@@ -129,7 +129,6 @@ export default class Forget extends Component {
         </div>
 
         <div>
-
           { stage === STAGE_USER_INFO && <Button primary fluid onClick={this.requestVerificationCode}>Send Verficiation Code</Button> }
           { stage === STAGE_VERIFICATION && <Button primary fluid onClick={this.requestInputPassword}>Reset password</Button> }
           { stage === STAGE_VERIFICATION && !enableResend && <Button fluid loading disabled>Waiting to resend</Button> }
