@@ -1,6 +1,6 @@
 # Features:
-1. Read to use in a real project
-2. No redux involved => no need to think about your code structure
+1. Ready to use in a real project
+2. No redux involved => easy to integrate to your project
 3. Support signup, signin, forget password, reset passoword, logout
 4. Support signup verification, signin MFA
 
@@ -10,5 +10,5 @@
 2. npm start
 
 # Use this in your real project:
-1. copy the whole src/auth to your project.
-2. modify the "css" based on your requriedments: register.js, login.js, forget.js
+1. Copy the whole src/auth to your project and consider 'auth' as a lib/module
+2. Modify the "css" based on your requriedments: register.js, login.js, forget.js
