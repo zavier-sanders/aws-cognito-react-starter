@@ -107,7 +107,7 @@ export default class Login extends Component {
             </div>
           </div>
         )}
-        { stage === STAGE_SUCCESS && (<AppRoute authStatus />)}
+        { stage === STAGE_SUCCESS && (<AppRoute />)}
       </div>
     )
   }

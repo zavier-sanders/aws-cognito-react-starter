@@ -59,7 +59,6 @@ export function loginCallbackFactory (callbacks, ctx) {
           sessionToken
         }
         sessionStorage.setItem('awsCredentials', JSON.stringify(awsCredentials))
-        sessionStorage.setItem('isLoggedIn', true)
 
         callbacks.onSuccess.call(ctx)
       })
@@ -197,11 +196,32 @@ export function handleForgotPasswordReset (username, verificationCode, newPasswo
 // SignOut methods
 // ======================================================
 export function handleSignOut () {
-  const userPool = new CognitoUserPool({
-    UserPoolId: config.aws_cognito_user_pools_id, // Your user pool id here
-    ClientId: config.aws_cognito_user_pools_web_client_id // Your client id here
-  })
-  const cognitoUser = userPool.getCurrentUser()
-  cognitoUser.signOut()
-  sessionStorage.setItem('isLoggedIn', false)
+  cognitoUser = userPool.getCurrentUser()
+
+  if (cognitoUser) {
+    cognitoUser.signOut()
+  }
+}
+
+// ======================================================
+// Check user session still valid
+// ======================================================
+export function getUserSession () {
+  cognitoUser = userPool.getCurrentUser()
+
+  if (cognitoUser != null) {
+    return cognitoUser.getSession(function (_err, session) {
+      if (session && session.isValid) {
+        return session
+      }
+    })
+  }
+}
+
+// current cognitor user, need to check undifined when used
+export function getCurrentUser () {
+  const session = getUserSession()
+  if (session) {
+    return cognitoUser
+  }
 }

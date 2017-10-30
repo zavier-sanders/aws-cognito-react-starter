@@ -2,7 +2,7 @@
 1. Ready to use in a real project
 2. No redux involved => easy to integrate to your project
 3. Support signup, signin, forget password, reset passoword, logout
-4. Support signup verification, signin MFA
+4. Support MFA for signup, signin, reset password
 
 # Run demo:
 1. npm install

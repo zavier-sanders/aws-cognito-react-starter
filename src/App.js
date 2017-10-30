@@ -13,72 +13,34 @@ import Home from './Home'
 import Login from './auth/Login'
 import Register from './auth/Register'
 import Forget from './auth/Forget'
-import {handleSignOut} from './auth/auth'
+import { getUserSession } from './auth/auth'
 import 'semantic-ui-css/semantic.css'
 
-const PublicRoute = ({ component: Component, authStatus, ...rest }) => (
-  <Route {...rest} render={props => authStatus === false
+const PublicRoute = ({ component: Component, userSession, ...rest }) => (
+  <Route {...rest} render={props => !userSession
         ? (<Component {...props} />) : (<Redirect to='/main' />)
     } />
 )
 
-const PrivateRoute = ({ component: Component, authStatus, ...rest }) => (
-  <Route {...rest} render={props => authStatus === false
+const PrivateRoute = ({ component: Component, userSession, ...rest }) => (
+  <Route {...rest} render={props => !userSession
         ? (<Redirect to='/login' />) : (<Component {...props} />)
     } />
 )
 
 export default class AppRoute extends Component {
-  constructor (props) {
-    super(props)
-    this.state = {authStatus: this.props.authStatus || false}
-    this.handleWindowClose = this.handleWindowClose.bind(this)
-  }
-
-  handleWindowClose = (e) => {
-    e.preventDefault()
-    handleSignOut()
-    this.setState(() => {
-      return {
-        authStatus: false
-      }
-    })
-  }
-
-  componentWillMount () {
-    this.validateUserSession()
-    window.addEventListener('beforeunload', this.handleWindowClose)
-  }
-
-  componentWillUnMount () {
-    window.removeEventListener('beforeunload', this.handleWindowClose)
-  }
-
-  validateUserSession () {
-    if (sessionStorage.getItem('isLoggedIn') === 'true') {
-      this.setState(() => {
-        return {
-          authStatus: true
-        }
-      })
-    } else {
-      this.setState(() => {
-        return {
-          authStatus: false
-        }
-      })
-    }
-  }
-
   render () {
+    const userSession = getUserSession()
+    console.log('userSession:')
+    console.log(userSession)
     return (
       <BrowserRouter>
         <Switch>
-          <PublicRoute authStatus={this.state.authStatus} path='/' exact component={Login} />
-          <PublicRoute authStatus={this.state.authStatus} path='/login' exact component={Login} />
-          <PublicRoute authStatus={this.state.authStatus} path='/register' exact component={Register} />
-          <PublicRoute authStatus={this.state.authStatus} path='/forget' exact component={Forget} />
-          <PrivateRoute authStatus={this.state.authStatus} path='/main' component={Home} />
+          <PublicRoute userSession={userSession} path='/' exact component={Login} />
+          <PublicRoute userSession={userSession} path='/login' exact component={Login} />
+          <PublicRoute userSession={userSession} path='/register' exact component={Register} />
+          <PublicRoute userSession={userSession} path='/forget' exact component={Forget} />
+          <PrivateRoute userSession={userSession} path='/main' component={Home} />
           <Route render={() => (<Redirect to='/login' />)} />
         </Switch>
       </BrowserRouter>
