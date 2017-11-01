@@ -7,9 +7,10 @@ See the License for the specific language governing permissions and limitations 
 */
 
 import React, { Component } from 'react'
-import ReactDOM from 'react-dom'
-import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom'
-import Home from './Home'
+import { Route, Redirect, Switch } from 'react-router-dom'
+import PrivateHome from './Private'
+import PublicHome from './Public'
+import Header from './Header'
 import Login from './auth/Login'
 import Register from './auth/Register'
 import Forget from './auth/Forget'
@@ -18,7 +19,7 @@ import 'semantic-ui-css/semantic.css'
 
 const PublicRoute = ({ component: Component, userSession, ...rest }) => (
   <Route {...rest} render={props => !userSession
-        ? (<Component {...props} />) : (<Redirect to='/main' />)
+        ? (<Component {...props} />) : (<Redirect to='/private' />)
     } />
 )
 
@@ -31,21 +32,19 @@ const PrivateRoute = ({ component: Component, userSession, ...rest }) => (
 export default class AppRoute extends Component {
   render () {
     const userSession = getUserSession()
-    console.log('userSession:')
-    console.log(userSession)
     return (
-      <BrowserRouter>
+      <div>
+        <Header redirectPathWhenSignout='/public' />
         <Switch>
-          <PublicRoute userSession={userSession} path='/' exact component={Login} />
+          <PublicRoute userSession={userSession} path='/' exact component={PublicHome} />
           <PublicRoute userSession={userSession} path='/login' exact component={Login} />
           <PublicRoute userSession={userSession} path='/register' exact component={Register} />
           <PublicRoute userSession={userSession} path='/forget' exact component={Forget} />
-          <PrivateRoute userSession={userSession} path='/main' component={Home} />
-          <Route render={() => (<Redirect to='/login' />)} />
+          <PublicRoute userSession={userSession} path='/public' exact component={PublicHome} />
+          <PrivateRoute userSession={userSession} path='/private' exact component={PrivateHome} />
+          <Redirect to='/public' />)
         </Switch>
-      </BrowserRouter>
+      </div>
     )
   }
 }
-
-ReactDOM.render(<AppRoute />, document.getElementById('root'))
