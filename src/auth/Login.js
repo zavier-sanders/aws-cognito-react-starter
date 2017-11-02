@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import AppRoute from '../App'
-import { Segment, Button, Divider, Input, Form, Label } from 'semantic-ui-react'
+import { Segment, Button, Divider, Input, Form, Label, Grid, Header, Message } from 'semantic-ui-react'
 import { Link } from 'react-router-dom'
 import { loginCallbackFactory, handleSignIn, sendMFAVerificationCode } from './auth'
 
@@ -62,52 +62,81 @@ export default class Login extends Component {
     sendMFAVerificationCode(this.state.code, this.callbacks)
   }
 
-  render () {
-    const { logInError, enableResend, stage } = this.state
+  renderLoginError () {
+    return (
+      <Message negative style={{textAlign: 'left'}}>
+        Error: { this.state.logInError }
+      </Message>
+    )
+  }
+
+  renderInfo () {
     return (
       <div>
-        { stage === STAGE_START && (
-          <div>
-            <div>
-              <div>
-                <Form.Field>
-                  <Input type='text' icon='user' iconPosition='left' placeholder='Username' style={{marginRight: 4 + 'em'}}
-                    onChange={(event) => this.setState({username: event.target.value, logInError: ''})} />
-                </Form.Field>
-                <Form.Field>
-                  <Input type='password' icon='hashtag' iconPosition='left' placeholder='Password' style={{marginRight: 4 + 'em'}}
-                    onChange={(event) => this.setState({password: event.target.value, logInError: ''})} />
-                </Form.Field>
-                { logInError && (<Label basic color='red' pointing='left'>{ logInError }</Label>) }
-                <Link to='/forget'>Forgot Password?</Link>
-              </div>
-            </div>
-            <div>
-              <Segment padded>
-                <Button primary fluid onClick={this.signIn}>Login</Button>
-                <Divider horizontal>Or</Divider>
-                <Link to='/register'><Button secondary fluid>Sign Up Now</Button></Link>
+        <Grid
+          textAlign='center'
+          style={{ marginTop: 120 }}
+          verticalAlign='middle'
+        >
+          <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
+            { this.state.logInError && this.renderLoginError() }
+            <Form size='large'>
+              <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
+                <Header as='h2' color='blue' textAlign='left'>
+                  Sign In
+                </Header>
+                <Form.Input
+                  fluid
+                  icon='user'
+                  iconPosition='left'
+                  placeholder='E-mail address'
+                  onChange={(event) => this.setState({username: event.target.value, logInError: ''})}
+                />
+                <Form.Input
+                  fluid
+                  icon='lock'
+                  iconPosition='left'
+                  placeholder='Password'
+                  type='password'
+                  onChange={(event) => this.setState({password: event.target.value, logInError: ''})}
+                />
+                <Button color='blue' fluid size='large' onClick={this.signIn}>Sign In</Button>
               </Segment>
-            </div>
-          </div>
-        )}
-        { stage === STAGE_VERIFICATION && (
-          <div>
-            <div>
-              <Form.Field>
-                <Input type='text' icon='hashtag' iconPosition='left' placeholder='Verification code' style={{marginRight: 4 + 'em'}}
-                  onChange={(event) => this.setState({code: event.target.value, logInError: ''})} />
-                { logInError && <Label basic color='red' pointing='left'>{ logInError }</Label> }
-              </Form.Field>
-            </div>
-            <div>
-              <Button primary fluid onClick={this.requestVerificationCode}>Validate</Button>
-              { enableResend && (<Button fluid color='purple' onClick={this.signIn}>Resend it!</Button>)}
-              { !enableResend && (<Button fluid loading disabled>Waiting to resend</Button>) }
-            </div>
-          </div>
-        )}
-        { stage === STAGE_SUCCESS && (<AppRoute />)}
+            </Form>
+            <Divider hidden />
+            <Link to='/forget'>Forgot Password</Link>
+            {' '} New to us? <Link to='/register'>Sign Up</Link>
+          </Grid.Column>
+        </Grid>
+      </div>
+    )
+  }
+
+  renderVerification () {
+    return (
+      <div>
+        <div>
+          <Form.Field>
+            <Input type='text' icon='hashtag' iconPosition='left' placeholder='Verification code' style={{marginRight: 4 + 'em'}}
+              onChange={(event) => this.setState({code: event.target.value, logInError: ''})} />
+            { this.state.logInError && <Label basic color='red' pointing='left'>{ this.state.logInError }</Label> }
+          </Form.Field>
+        </div>
+        <div>
+          <Button primary fluid onClick={this.requestVerificationCode}>Validate</Button>
+          { this.state.enableResend && (<Button fluid color='purple' onClick={this.signIn}>Resend it!</Button>)}
+          { !this.state.enableResend && (<Button fluid loading disabled>Waiting to resend</Button>) }
+        </div>
+      </div>
+    )
+  }
+
+  render () {
+    return (
+      <div>
+        { this.state.stage === STAGE_START && this.renderInfo() }
+        { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
+        { this.state.stage === STAGE_SUCCESS && (<AppRoute />)}
       </div>
     )
   }
