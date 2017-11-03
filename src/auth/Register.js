@@ -1,11 +1,14 @@
 import React, { Component } from 'react'
-import { Button, Input, Form, Label } from 'semantic-ui-react'
+import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
 import { handleResendVerificationCode, handleSubmitVerificationCode, handleSignUp, checkSignUpError } from './auth'
 
 const STAGE_START = 'STAGE_START'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
-const STAGE_SUCCESS = 'STAGE_SUCCESS'
+const STAGE_REDIRECT = 'STAGE_REDIRECT'
+
+const COUNT_DOWN_RESEND = 30
+const COUNT_DOWN_REDIRECT = 5
 
 export default class Register extends Component {
   state = {
@@ -15,73 +18,81 @@ export default class Register extends Component {
     email: '',
     code: '',
     invalidCodeMessage: '',
-    invalidFormDataMessage: '',
+    errorMessage: '',
 
     stage: STAGE_START,
-    enableResend: false
+    countDown: COUNT_DOWN_RESEND
   };
 
   signUpCallback = function (err, data) {
     if (err) {
       const displayError = checkSignUpError(err)
       this.setState({
-        invalidFormDataMessage: displayError
+        errorMessage: displayError
       })
       return
     }
     this.setState({
-      stage: STAGE_VERIFICATION,
-      enableResend: false
+      stage: STAGE_VERIFICATION
     })
-    this.countDownResendVerificationCode()
+    this.countDownReset()
   }.bind(this);
 
   verificationCallback = function (err, data) {
     if (err) {
       this.setState({
-        invalidCodeMessage: 'Invalid Verification Code'
+        errorMessage: 'Invalid Verification Code'
       })
       return
     }
     this.setState({
-      stage: STAGE_SUCCESS
+      stage: STAGE_REDIRECT
     })
+    this.countDownReset()
   }.bind(this);
 
   resendCodeCallback = function (err, result) {
     if (err) {
       return
     }
-    this.setState({
-      enableResend: false
-    })
+    this.countDownReset()
   }.bind(this);
 
   handleSubmit = () => {
-    const validEmailPattern = this.checkEmailPattern()
-    const validPasswordMatch = this.checkPasswordMatch()
-    const validUsernameMatch = this.checkUsernameMatch()
-
-    const checkRegistrationForm = validEmailPattern && validPasswordMatch && validUsernameMatch
-
-    checkRegistrationForm && handleSignUp(
-      this.state.email,
-      this.state.password,
-      this.state.name,
-      this.signUpCallback
-    )
+    if (!this.state.name || !this.state.email || !this.state.password || !this.state.passwordMatch) {
+      this.setState({
+        errorMessage: 'Please fill all fields in the form below.'
+      })
+    } else if (!this.checkNamePattern() || !this.checkEmailPattern() || !this.checkPasswordMatch()) {
+      this.setState({
+        errorMessage: 'Invalid input.'
+      })
+    } else {
+      handleSignUp(
+        this.state.email,
+        this.state.password,
+        this.state.name,
+        this.signUpCallback
+      )
+    }
   }
 
   handleSubmitVerification = () => {
-    handleSubmitVerificationCode(this.state.email, this.state.code, this.verificationCallback)
+    if (!this.state.code) {
+      this.setState({
+        errorMessage: 'Code cannot be empty.'
+      })
+    } else {
+      handleSubmitVerificationCode(this.state.email, this.state.code, this.verificationCallback)
+    }
   }
 
   resendVerificationCode = () => {
     handleResendVerificationCode(this.state.email, this.resendCodeCallback)
   }
 
-  checkUsernameMatch = () => {
-    return this.state.name && this.state.name.length > 2
+  checkNamePattern = () => {
+    return this.state.name && this.state.name.length > 0
   }
 
   checkPasswordMatch = () => {
@@ -92,76 +103,142 @@ export default class Register extends Component {
     return /\S+@\S+\.\S+/.test(this.state.email)
   }
 
-  countDownResendVerificationCode = () => {
-    let counter = 20
-    var seconds = setInterval(() => {
-      if (counter === 0) {
+  countDownReset = () => {
+    this.setState({
+      countDown: this.state.stage === STAGE_VERIFICATION ? COUNT_DOWN_RESEND : COUNT_DOWN_REDIRECT
+    })
+    const seconds = setInterval(() => {
+      if (this.state.countDown === 0) {
         clearInterval(seconds)
+      } else {
         this.setState({
-          enableResend: true
+          countDown: this.state.countDown - 1
         })
       }
-      counter--
     }, 1000)
   }
 
-  render () {
-    const { name,
-            email,
-            password,
-            passwordMatch,
-            stage,
-            enableResend,
-            invalidCodeMessage,
-            invalidFormDataMessage } = this.state
+  renderErrorMessage (message) {
+    return (
+      <Message negative style={{textAlign: 'left'}}>
+        Error: { message }
+      </Message>
+    )
+  }
 
+  renderInfo () {
+    console.log(this.state)
     return (
       <div>
-        { stage === STAGE_START && (
-          <div>
-            <div>
-              <form>
-                <Form.Field>
-                  <Input type='text' icon='user plus' iconPosition='left' placeholder='name' style={{marginRight: 4 + 'em'}}
-                    onChange={(event) => this.setState({name: event.target.value.trim(), invalidFormDataMessage: ''})} />
-                  { name && !this.checkUsernameMatch() && <Label basic color='red' pointing='left'>Invalid name, must conatin atleast 1 character</Label> }
-                </Form.Field>
-                <Form.Field>
-                  <Input type='password' icon='hashtag' iconPosition='left' placeholder='Password' style={{marginRight: 4 + 'em'}}
-                    onChange={(event) => this.setState({password: event.target.value.trim(), invalidFormDataMessage: ''})} />
-                </Form.Field>
-                <Form.Field>
-                  <Input type='password' icon='hashtag' iconPosition='left' placeholder='Re-enter Password' style={{marginRight: 4 + 'em'}}
-                    onChange={(event) => this.setState({passwordMatch: event.target.value.trim(), invalidFormDataMessage: ''})} />
-                  { password && passwordMatch && !this.checkPasswordMatch() && <Label basic color='red' pointing='left'>Password does not match</Label> }
-                </Form.Field>
-                <Form.Field>
-                  <Input type='email' icon='envelope' iconPosition='left' placeholder='Email' style={{marginRight: 4 + 'em'}}
-                    onChange={(event) => this.setState({email: event.target.value, invalidFormDataMessage: ''})} />
-                  { email && !this.checkEmailPattern() && <Label basic color='red' pointing='left'>Invalid email format</Label> }
-                </Form.Field>
-              </form>
-            </div>
-            <div><Button primary fluid onClick={this.handleSubmit}>Register</Button>
-              { invalidFormDataMessage && <Label basic color='red' pointing='left'>{ invalidFormDataMessage }</Label> }
-            </div>
-          </div>
-        )}
-        { stage === STAGE_VERIFICATION && (
-          <div>
-            <div>
-              <Input type='text' icon='unlock alternate' iconPosition='left' placeholder='Verification Code' style={{marginRight: 4 + 'em'}}
-                onChange={(event) => this.setState({code: event.target.value, invalidCodeMessage: ''})} />
-              { invalidCodeMessage && <Label basic color='red' pointing='left'>Invalid verfication code</Label> }
-            </div>
-            <div>
-              <Button primary fluid onClick={this.handleSubmitVerification}>Confirm</Button>
-              { !enableResend && <Button fluid loading onClick={this.countDownResendVerificationCode()}>Waiting to resend</Button> }
-              { enableResend && <Button fluid color='purple' onClick={this.resendVerificationCode}>Resend it!</Button> }
-            </div>
-          </div>
-        )}
-        { stage === STAGE_SUCCESS && (<Redirect to='/login' />)}
+        <Grid
+          textAlign='center'
+          style={{ marginTop: 120 }}
+          verticalAlign='middle'
+        >
+          <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
+            { this.state.errorMessage && this.renderErrorMessage(this.state.errorMessage) }
+            <Form size='large'>
+              <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
+                <Header as='h2' color='blue' textAlign='left'>
+                  Sign Up
+                </Header>
+                <Form.Input
+                  fluid
+                  icon='user'
+                  iconPosition='left'
+                  placeholder='Name'
+                  onBlur={(event) => this.setState({name: event.target.value.trim(), errorMessage: ''})}
+                />
+                { this.state.name && !this.checkNamePattern() && this.renderErrorMessage('Invalid name')}
+
+                <Form.Input
+                  fluid
+                  icon='mail'
+                  iconPosition='left'
+                  placeholder='E-mail address'
+                  onBlur={(event) => this.setState({email: event.target.value.trim(), errorMessage: ''})}
+                />
+                { this.state.email && !this.checkEmailPattern() && this.renderErrorMessage('Invalid email format')}
+
+                <Form.Input
+                  fluid
+                  icon='lock'
+                  iconPosition='left'
+                  placeholder='Password'
+                  type='password'
+                  onBlur={(event) => this.setState({password: event.target.value.trim(), errorMessage: ''})}
+                />
+                <Form.Input
+                  fluid
+                  icon='lock'
+                  iconPosition='left'
+                  placeholder='Password Confirm'
+                  type='password'
+                  onBlur={(event) => this.setState({passwordMatch: event.target.value.trim(), errorMessage: ''})}
+                />
+                { this.state.password && this.state.passwordMatch && !this.checkPasswordMatch() && this.renderErrorMessage('Password does not match')}
+                <Button color='blue' fluid size='large' onClick={this.handleSubmit}>Sign Up</Button>
+              </Segment>
+            </Form>
+          </Grid.Column>
+        </Grid>
+      </div>
+    )
+  }
+
+  renderVerification () {
+    return (
+      <div>
+        <Grid
+          textAlign='center'
+          style={{ marginTop: 120 }}
+          verticalAlign='middle'
+        >
+          <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
+            { this.state.errorMessage && this.renderErrorMessage(this.state.errorMessage) }
+            <Form size='large'>
+              <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
+                <Header as='h4' textAlign='left'>
+                  Please check your email and enter the verification code here:
+                </Header>
+                <Form.Input
+                  fluid
+                  icon='hashtag'
+                  iconPosition='left'
+                  placeholder='Code'
+                  onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
+                />
+                <Button color='blue' fluid onClick={this.handleSubmitVerification}>Validate</Button>
+                <div style={{marginTop: 10}}/>
+                { this.state.countDown>0 && (<Button color='orange' fluid disabled>Resend Code in {this.state.countDown} s</Button>) }
+                { this.state.countDown===0 && (<Button color='orange' fluid onClick={this.resendVerificationCode}>Resend Code</Button>) }
+              </Segment>
+            </Form>
+          </Grid.Column>
+        </Grid>
+      </div>
+    )
+  }
+
+  renderRedirect () {
+    if (this.state.countDown > 0) {
+      return (
+        <div>
+          Congratulations.
+          Redirecting to login page in {this.state.countDown} seconds.
+        </div>
+      )
+    } 
+
+    return <Redirect to='/login' /> 
+  }
+
+  render () {
+    return (
+      <div>
+        { this.state.stage === STAGE_START && this.renderInfo() }
+        { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
+        { this.state.stage === STAGE_REDIRECT && this.renderRedirect()}
       </div>
     )
   }

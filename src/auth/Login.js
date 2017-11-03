@@ -6,7 +6,7 @@ import { loginCallbackFactory, handleSignIn, sendMFAVerificationCode } from './a
 
 const STAGE_START = 'STAGE_START'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
-const STAGE_SUCCESS = 'STAGE_SUCCESS'
+const STAGE_REDIRECT = 'STAGE_REDIRECT'
 
 export default class Login extends Component {
   state = {
@@ -21,12 +21,12 @@ export default class Login extends Component {
   callbacks = loginCallbackFactory({
     onSuccess () {
       this.setState({
-        stage: STAGE_SUCCESS
+        stage: STAGE_REDIRECT
       })
     },
     onFailure (error) {
       this.setState({
-        logInError: error
+        errorMessage: error
       })
     },
     mfaRequired () {
@@ -62,10 +62,10 @@ export default class Login extends Component {
     sendMFAVerificationCode(this.state.code, this.callbacks)
   }
 
-  renderLoginError () {
+  renderErrorMessage () {
     return (
       <Message negative style={{textAlign: 'left'}}>
-        Error: { this.state.logInError }
+        Error: { this.state.errorMessage }
       </Message>
     )
   }
@@ -79,7 +79,7 @@ export default class Login extends Component {
           verticalAlign='middle'
         >
           <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
-            { this.state.logInError && this.renderLoginError() }
+            { this.state.errorMessage && this.renderErrorMessage() }
             <Form size='large'>
               <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
                 <Header as='h2' color='blue' textAlign='left'>
@@ -90,7 +90,7 @@ export default class Login extends Component {
                   icon='user'
                   iconPosition='left'
                   placeholder='E-mail address'
-                  onChange={(event) => this.setState({username: event.target.value, logInError: ''})}
+                  onChange={(event) => this.setState({username: event.target.value, errorMessage: ''})}
                 />
                 <Form.Input
                   fluid
@@ -98,7 +98,7 @@ export default class Login extends Component {
                   iconPosition='left'
                   placeholder='Password'
                   type='password'
-                  onChange={(event) => this.setState({password: event.target.value, logInError: ''})}
+                  onChange={(event) => this.setState({password: event.target.value, errorMessage: ''})}
                 />
                 <Button color='blue' fluid size='large' onClick={this.signIn}>Sign In</Button>
               </Segment>
@@ -118,13 +118,13 @@ export default class Login extends Component {
         <div>
           <Form.Field>
             <Input type='text' icon='hashtag' iconPosition='left' placeholder='Verification code' style={{marginRight: 4 + 'em'}}
-              onChange={(event) => this.setState({code: event.target.value, logInError: ''})} />
-            { this.state.logInError && <Label basic color='red' pointing='left'>{ this.state.logInError }</Label> }
+              onChange={(event) => this.setState({code: event.target.value, errorMessage: ''})} />
+            { this.state.errorMessage && <Label basic color='red' pointing='left'>{ this.state.errorMessage }</Label> }
           </Form.Field>
         </div>
         <div>
-          <Button primary fluid onClick={this.requestVerificationCode}>Validate</Button>
-          { this.state.enableResend && (<Button fluid color='purple' onClick={this.signIn}>Resend it!</Button>)}
+          <Button primary fluid onClick={this.signIn}>Validate</Button>
+          { this.state.enableResend && (<Button fluid color='purple' onClick={this.requestVerificationCode}>Resend it!</Button>)}
           { !this.state.enableResend && (<Button fluid loading disabled>Waiting to resend</Button>) }
         </div>
       </div>
@@ -136,7 +136,7 @@ export default class Login extends Component {
       <div>
         { this.state.stage === STAGE_START && this.renderInfo() }
         { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
-        { this.state.stage === STAGE_SUCCESS && (<AppRoute />)}
+        { this.state.stage === STAGE_REDIRECT && (<AppRoute />)}
       </div>
     )
   }
