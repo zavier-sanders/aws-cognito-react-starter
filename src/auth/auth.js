@@ -16,6 +16,21 @@ const userPool = new CognitoUserPool({
 })
 let cognitoUser = null
 
+export const MSG_PASSWORD_PATTERN = 'Password must contain at least 8 characters, one lowercase, uppercase and numeric character'
+export const MSG_SERVER_ERROR = 'Internal Server Error. Please retry.'
+
+export const checkNamePattern = (name) => {
+  return name.length > 0
+}
+
+export const checkPasswordPattern = (password) => {
+  return /[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) && (password.length >= 8)
+}
+
+export const checkEmailPattern = (email) => {
+  return /\S+@\S+\.\S+/.test(email)
+}
+
 // ======================================================
 //   Signin methods
 // ======================================================
@@ -83,11 +98,11 @@ export function sendMFAVerificationCode (code, callbacks) {
 export function checkLoginError (error) {
   const err = error.toString()
   console.log(err)
-  if (/InvalidParameterException: Missing required parameter USERNAME$/.test(err) ||
-    (/UserNotFoundException?/.test(err)) ||
-    (/NotAuthorizedException?/.test(err))) {
+  if (/InvalidParameterException: Missing required parameter USERNAME/.test(err) ||
+    (/UserNotFoundException/.test(err)) ||
+    (/NotAuthorizedException/.test(err))) {
     return 'Invalid username or password.'
-  } else if (/InvalidParameterException: Missing required parameter SMS_MFA_CODE$/.test(err)) {
+  } else if (/InvalidParameterException: Missing required parameter SMS_MFA_CODE/.test(err)) {
     return 'Verficiation code cannot be empty.'
   } else if (/CodeMismatchException/.test(err)) {
     return 'Invalid verification code.'
@@ -116,13 +131,13 @@ export function handleSignUp (email, password, username, signUpCallback) {
 
 export function checkSignUpError (error) {
   const err = error.toString()
-  if (/UsernameExistsException?/.test(err)) {
+  if (/UsernameExistsException/.test(err)) {
     return 'User already exists'
-  } else if (/InvalidPasswordException?/.test(err) ||
-      /Value at 'password' failed to satisfy constraint?/.test(err)) {
-    return 'Password must contain atleast 8 characters, one lowercase, uppercase, numeric character'
+  } else if (/InvalidPasswordException/.test(err) ||
+      /Value at 'password' failed to satisfy constraint/.test(err)) {
+    return MSG_PASSWORD_PATTERN
   } else {
-    return 'Internal Server Error. Please retry.'
+    return MSG_SERVER_ERROR
   }
 }
 
@@ -163,19 +178,17 @@ export function forgotPasswordFactoryCallback (forgotPasswordCallBack, ctx) {
 }
 
 export function checkResetPasswordError (error) {
-  if ((/UserNotFoundException?/.test(error)) ||
-    (/InvalidParameterException: Cannot reset password for the user as there is no registered?/.test(error))) {
-    return {invalidCodeOrPasswordMessage: 'Invalid username'}
-  } else if (/LimitExceededException: Attempt limit exceeded, please try after some time?/.test(error)) {
-    return {invalidCodeOrPasswordMessage: 'Attempt limit exceeded, please try again later'}
-  } else if (/CodeMismatchException?/.test(error)) {
-    return {invalidCodeOrPasswordMessage: 'Invalid Verfication Code'}
-  } else if (/InvalidParameterException: Cannot reset password for the user as there is no registered verified email or phone_number?$/.test(error)) {
-    return {invalidCodeOrPasswordMessage: 'Cannot reset password for the user as there is no registered verified email or phone_number'}
-  } else if ((/InvalidParameterException?/.test(error)) || (/InvalidPasswordException?$/.test(error))) {
-    return {invalidCodeOrPasswordMessage: 'Password must contain 8 or more characters with atleast one lowercase,uppercase, numerical and special character'}
+  if ((/UserNotFoundException/.test(error)) ||
+    (/InvalidParameterException: Cannot reset password for the user as there is no registered/.test(error))) {
+    return 'Invalid email'
+  } else if (/LimitExceededException/.test(error)) {
+    return 'Attempt limit exceeded, please try again later'
+  } else if (/CodeMismatchException/.test(error)) {
+    return 'Invalid Verfication Code'
+  } else if (/InvalidPasswordException/.test(error)) {
+    return MSG_PASSWORD_PATTERN
   } else {
-    return 'Internal Server Error. Please retry.'
+    return MSG_SERVER_ERROR
   }
 }
 

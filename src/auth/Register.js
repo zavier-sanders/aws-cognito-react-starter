@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
-import { handleResendVerificationCode, handleSubmitVerificationCode, handleSignUp, checkSignUpError } from './auth'
+import { MSG_PASSWORD_PATTERN, checkEmailPattern, checkPasswordPattern, checkNamePattern,
+         handleResendVerificationCode, handleSubmitVerificationCode, handleSignUp, checkSignUpError } from './auth'
 import Verification from './Verification'
 
 const STAGE_INFO = 'STAGE_INFO'
@@ -37,10 +38,13 @@ export default class Register extends Component {
     clearInterval(this.seconds)
   }
 
-  signUpCallback = function (err, data) {
-    if (err) {
+  /////////////////////// callback for auth lib /////////////////////
+  // Callback structure here is not consistent with Login and Forget component, 
+  // due to the inconsistent design of aws-cognitio api: "onSuccess" vs "error"
+  signUpCallback = (error, data) => {
+    if (error) {
       this.setState({
-        errorMessage: checkSignUpError(err)
+        errorMessage: checkSignUpError(error)
       })
     } else {
       this.setState({
@@ -49,10 +53,10 @@ export default class Register extends Component {
         countDown: COUNT_DOWN_RESEND
       })
     }
-  }.bind(this);
+  }
 
-  verificationCallback = function (err, data) {
-    if (err) {
+  verificationCallback = (error, data) => {
+    if (error) {
       this.setState({
         errorMessage: 'Invalid verification code.'
       })
@@ -63,10 +67,10 @@ export default class Register extends Component {
         countDown: COUNT_DOWN_REDIRECT
       })
     }
-  }.bind(this);
+  }
 
-  resendCodeCallback = function (err, result) {
-    if (err) {
+  resendCodeCallback = (error, result) => {
+    if (error) {
       this.setState({
         errorMessage: 'Resend code fail. Please retry.'
       })
@@ -76,14 +80,16 @@ export default class Register extends Component {
         countDown: COUNT_DOWN_RESEND
       })
     }
-  }.bind(this);
+  }
 
+  /////////////////////////// button ////////////////////////
   handleSubmit = () => {
-    if (!this.state.name || !this.state.email || !this.state.password || !this.state.passwordMatch) {
+    const { name, email, password, passwordMatch } = this.state
+    if (!name || !email || !password || !passwordMatch) {
       this.setState({
         errorMessage: 'Please fill all fields in the form below.'
       })
-    } else if (!this.checkNamePattern() || !this.checkEmailPattern() || !this.checkPasswordMatch()) {
+    } else if (!checkNamePattern(name) || !checkEmailPattern(email) || !checkPasswordPattern(password) || !this.checkPasswordMatch()) {
       this.setState({
         errorMessage: 'Invalid input.'
       })
@@ -107,23 +113,20 @@ export default class Register extends Component {
     }
   }
 
-  resendVerificationCode = () => {
+  handleResendVerification = () => {
+    this.setState({
+      countDown: COUNT_DOWN_RESEND
+    })
     handleResendVerificationCode(this.state.email, this.resendCodeCallback)
   }
 
-  checkNamePattern = () => {
-    return this.state.name && this.state.name.length > 0
-  }
+  //////////////////////// render /////////////////////////
 
   checkPasswordMatch = () => {
     return this.state.password === this.state.passwordMatch
   }
 
-  checkEmailPattern = () => {
-    return /\S+@\S+\.\S+/.test(this.state.email)
-  }
-
-  renderErrorMessage (message) {
+  renderErrorMessage = (message) => {
     return (
       <Message negative style={{textAlign: 'left'}}>
         Error: { message }
@@ -131,7 +134,8 @@ export default class Register extends Component {
     )
   }
 
-  renderInfo () {
+  renderInfo = () => {
+    const { errorMessage, name, email, password, passwordMatch } = this.state
     return (
       <div>
         <Grid
@@ -140,7 +144,7 @@ export default class Register extends Component {
           verticalAlign='middle'
         >
           <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
-            { this.state.errorMessage && this.renderErrorMessage(this.state.errorMessage) }
+            { errorMessage && this.renderErrorMessage(errorMessage) }
             <Form size='large'>
               <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
                 <Header as='h2' color='blue' textAlign='left'>
@@ -151,18 +155,18 @@ export default class Register extends Component {
                   icon='user'
                   iconPosition='left'
                   placeholder='Name'
-                  onBlur={(event) => this.setState({name: event.target.value.trim(), errorMessage: ''})}
+                  onChange={(event) => this.setState({name: event.target.value.trim(), errorMessage: ''})}
                 />
-                { this.state.name && !this.checkNamePattern() && this.renderErrorMessage('Invalid name')}
+                { name && !checkNamePattern(name) && this.renderErrorMessage('Invalid name')}
 
                 <Form.Input
                   fluid
                   icon='mail'
                   iconPosition='left'
                   placeholder='E-mail address'
-                  onBlur={(event) => this.setState({email: event.target.value.trim(), errorMessage: ''})}
+                  onChange={(event) => this.setState({email: event.target.value.trim(), errorMessage: ''})}
                 />
-                { this.state.email && !this.checkEmailPattern() && this.renderErrorMessage('Invalid email format')}
+                { email && !checkEmailPattern(email) && this.renderErrorMessage('Invalid email format')}
 
                 <Form.Input
                   fluid
@@ -170,17 +174,19 @@ export default class Register extends Component {
                   iconPosition='left'
                   placeholder='Password'
                   type='password'
-                  onBlur={(event) => this.setState({password: event.target.value.trim(), errorMessage: ''})}
+                  onChange={(event) => this.setState({password: event.target.value.trim(), errorMessage: ''})}
                 />
+                { password && !checkPasswordPattern(password) && this.renderErrorMessage(MSG_PASSWORD_PATTERN)}
+
                 <Form.Input
                   fluid
                   icon='lock'
                   iconPosition='left'
                   placeholder='Password Confirm'
                   type='password'
-                  onBlur={(event) => this.setState({passwordMatch: event.target.value.trim(), errorMessage: ''})}
+                  onChange={(event) => this.setState({passwordMatch: event.target.value.trim(), errorMessage: ''})}
                 />
-                { this.state.password && this.state.passwordMatch && !this.checkPasswordMatch() && this.renderErrorMessage('Password does not match')}
+                { password && passwordMatch && !this.checkPasswordMatch() && this.renderErrorMessage('Password does not match')}
                 <Button color='blue' fluid size='large' onClick={this.handleSubmit}>Sign Up</Button>
               </Segment>
             </Form>
@@ -190,19 +196,19 @@ export default class Register extends Component {
     )
   }
 
-  renderVerification () {
+  renderVerification = () => {
     return (
       <Verification
         errorMessage={this.state.errorMessage}
         countDown={this.state.countDown}
-        onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
+        onChange={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
         onValidate={this.handleSubmitVerification}
-        onResendCode={this.resendVerificationCode}
+        onResendCode={this.handleResendVerification}
       />
     )
   }
 
-  renderRedirect () {
+  renderRedirect = () => {
     if (this.state.countDown > 0) {
       return (
         <Grid
@@ -223,7 +229,7 @@ export default class Register extends Component {
     }
   }
 
-  render () {
+  render = () => {
     return (
       <div>
         { this.state.stage === STAGE_INFO && this.renderInfo() }

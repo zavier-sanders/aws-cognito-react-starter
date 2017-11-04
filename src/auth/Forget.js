@@ -1,145 +1,199 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router-dom'
-import { Button, Input, Form, Label } from 'semantic-ui-react'
-import {forgotPasswordFactoryCallback, handleForgotPassword, handleForgotPasswordReset} from './auth'
+import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
+import { MSG_PASSWORD_PATTERN, checkPasswordPattern, checkEmailPattern, forgotPasswordFactoryCallback, handleForgotPassword, 
+         handleForgotPasswordReset } from './auth'
+import Verification from './Verification'
 
-const STAGE_USER_INFO = 'STAGE_USER_INFO'
+const STAGE_INFO = 'STAGE_INFO'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
-const STAGE_NEW_PASSWORD = 'STAGE_NEW_PASSWORD'
-const STAGE_SUCCESS = 'STAGE_SUCCESS'
+const STAGE_REDIRECT = 'STAGE_REDIRECT'
+
+const COUNT_DOWN_RESEND = 30
+const COUNT_DOWN_REDIRECT = 5
 
 export default class Forget extends Component {
   state = {
-    stage: STAGE_USER_INFO,
-    username: '',
+    stage: STAGE_INFO,
+    email: '',
     password: '',
     passwordMatch: '',
     code: '',
-    enableResend: false,
-    formDataErrorMessage: ''  // could be from server or client
+    countDown: 0,
+    errorMessage: ''
   }
 
+  seconds = setInterval(() => {
+    if (this.state.countDown > 0) {
+      this.setState({
+        countDown: this.state.countDown - 1
+      })
+    }
+  }, 1000)
+
+  componentWillUnmount () {
+    clearInterval(this.seconds)
+  }
+
+  /////////////////////// callback for auth lib /////////////////////
   forgotPasswordCallBack = forgotPasswordFactoryCallback({
     onSuccess: () => {
       this.setState({
-        stage: STAGE_SUCCESS
+        stage: STAGE_REDIRECT,
+        countDown: COUNT_DOWN_REDIRECT
       })
     },
-    onFailure: (err) => {
+    onFailure: (error) => {
       this.setState({
-        formDataErrorMessage: err.invalidCodeOrPasswordMessage
+        errorMessage: error
       })
     },
     inputVerificationCode: (data) => {
       this.setState({
         stage: STAGE_VERIFICATION,
-        enableResend: false
+        countDown: COUNT_DOWN_RESEND
       })
-      this.countDownResendVerificationCode()
     }
   }, this);
 
-  checkPasswordMatch = () => {
-    return this.state.password === this.state.passwordMatch
-  }
-
-  requestVerificationCode = (e) => {
-    const username = this.state.username
-    if (!username) {
-      this.setState(() => {
-        return {
-          formDataErrorMessage: 'Please input valid username'
-        }
-      })
-    }
-    handleForgotPassword(username, this.forgotPasswordCallBack)
-  }
-
-  requestInputPassword = (e) => {
-    const code = this.state.code
-    if (!code) {
+  /////////////////////////// button ////////////////////////
+  handleSubmit = () => {
+    const { email, password, passwordMatch } = this.state
+    if (!email || !password || !passwordMatch) {
       this.setState({
-        formDataErrorMessage: 'Verification code can not be empty'
+        errorMessage: 'Please fill all fields in the form below.'
       })
-      return
+    } else if (!checkEmailPattern(email) || !checkPasswordPattern(password) || !this.checkPasswordMatch()) {
+      this.setState({
+        errorMessage: 'Invalid input.'
+      })
+    } else {
+      handleForgotPassword(email, this.forgotPasswordCallBack)
     }
-    this.setState({
-      stage: STAGE_NEW_PASSWORD,
-      formDataErrorMessage: ''
-    })
   }
 
-  handlePasswordReset = (e) => {
-    this.checkPasswordMatch() && handleForgotPasswordReset(
-      this.state.username,
+  handleSubmitVerification = () => {
+    handleForgotPasswordReset(
+      this.state.email,
       this.state.code,
       this.state.password,
       this.forgotPasswordCallBack
     )
   }
 
-  countDownResendVerificationCode = () => {
-    let counter = 20
-    let seconds = setInterval(() => {
-      if (counter === 0) {
-        clearInterval(seconds)
-        this.setState(() => {
-          return {
-            enableResend: true
-          }
-        })
-      }
-      counter--
-    }, 1000)
+  handleResendVerification = () => {
+    this.setState({
+      countDown: COUNT_DOWN_RESEND
+    })
+    handleForgotPassword(this.state.email, this.forgotPasswordCallBack)
   }
 
-  render () {
-    const {
-      password,
-      passwordMatch,
-      stage,
-      formDataErrorMessage,
-      enableResend
-    } = this.state
+  //////////////////////// render /////////////////////////
+  checkPasswordMatch = () => {
+    return this.state.password === this.state.passwordMatch
+  }
 
+  renderErrorMessage = (message) => {
+    return (
+      <Message negative style={{textAlign: 'left'}}>
+        Error: { message }
+      </Message>
+    )
+  }
+
+  renderInfo = () => {
+    const { errorMessage, email, password, passwordMatch } = this.state
     return (
       <div>
-        <div>
-          { stage === STAGE_USER_INFO && (
-            <Form.Field>
-              <Input type='text' icon='users' iconPosition='left' placeholder='Username' style={{marginRight: 4 + 'em'}}
-                onChange={(event) => this.setState({username: event.target.value, formDataErrorMessage: ''})} />
-            </Form.Field>
-          )}
-          { stage === STAGE_VERIFICATION && (
-            <Form.Field>
-              <Input type='text' icon='code' iconPosition='left' placeholder='Verification Code' style={{marginRight: 4 + 'em'}}
-                onChange={(event) => this.setState({code: event.target.value, formDataErrorMessage: ''})} />
-            </Form.Field>
-          )}
-          { stage === STAGE_NEW_PASSWORD && (
-            <Form.Field>
-              <Input type='password' icon='code' iconPosition='left' placeholder='Password' style={{marginRight: 4 + 'em'}}
-                onChange={(event) => this.setState({password: event.target.value, formDataErrorMessage: ''})} />
-              <Input type='password' icon='code' iconPosition='left' placeholder='Password' style={{marginRight: 4 + 'em'}}
-                onChange={(event) => this.setState({passwordMatch: event.target.value, formDataErrorMessage: ''})} />
-              { password && passwordMatch && !this.checkPasswordMatch() && <Label basic color='red' pointing='left'>Password does not match</Label> }
-            </Form.Field>
-          )}
-        </div>
+        <Grid
+          textAlign='center'
+          style={{ marginTop: 120 }}
+          verticalAlign='middle'
+        >
+          <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
+            { errorMessage && this.renderErrorMessage(errorMessage) }
+            <Form size='large'>
+              <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
+                <Header as='h2' color='blue' textAlign='left'>
+                  Reset Password
+                </Header>
+                <Form.Input
+                  fluid
+                  icon='mail'
+                  iconPosition='left'
+                  placeholder='E-mail address'
+                  onChange={(event) => this.setState({email: event.target.value.trim(), errorMessage: ''})}
+                />
+                { email && !checkEmailPattern(email) && this.renderErrorMessage('Invalid email format')}
 
-        <div>
-          { stage === STAGE_USER_INFO && <Button primary fluid onClick={this.requestVerificationCode}>Send Verficiation Code</Button> }
-          { stage === STAGE_VERIFICATION && <Button primary fluid onClick={this.requestInputPassword}>Reset password</Button> }
-          { stage === STAGE_VERIFICATION && !enableResend && <Button fluid loading disabled>Waiting to resend</Button> }
-          { stage === STAGE_VERIFICATION && enableResend && <Button fluid color='purple' onClick={this.requestVerificationCode}>Resend it!</Button> }
+                <Form.Input
+                  fluid
+                  icon='lock'
+                  iconPosition='left'
+                  placeholder='Password'
+                  type='password'
+                  onChange={(event) => this.setState({password: event.target.value.trim(), errorMessage: ''})}
+                />
+                { password && !checkPasswordPattern(password) && this.renderErrorMessage(MSG_PASSWORD_PATTERN)}
 
-          { stage === STAGE_NEW_PASSWORD && <Button primary fluid onClick={this.handlePasswordReset}>Submit</Button> }
+                <Form.Input
+                  fluid
+                  icon='lock'
+                  iconPosition='left'
+                  placeholder='Password Confirm'
+                  type='password'
+                  onChange={(event) => this.setState({passwordMatch: event.target.value.trim(), errorMessage: ''})}
+                />
+                { password && passwordMatch && !this.checkPasswordMatch() && this.renderErrorMessage('Password does not match')}
+                <Button color='blue' fluid size='large' onClick={this.handleSubmit}>
+                  Reset Password
+                </Button>
+              </Segment>
+            </Form>
+          </Grid.Column>
+        </Grid>
+      </div>
+    )
+  }
 
-          { formDataErrorMessage && <Label basic color='red' pointing='left'>{ formDataErrorMessage }</Label> }
-        </div>
+  renderVerification = () => {
+    return (
+      <Verification
+        errorMessage={this.state.errorMessage}
+        countDown={this.state.countDown}
+        onChange={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
+        onValidate={this.handleSubmitVerification}
+        onResendCode={this.handleResendVerification}
+      />
+    )
+  }
 
-        { stage === STAGE_SUCCESS && <Redirect to='/login' /> }
+  renderRedirect = () => {
+    if (this.state.countDown > 0) {
+      return (
+        <Grid
+          textAlign='center'
+          style={{ marginTop: 120 }}
+          verticalAlign='middle'
+        >
+          <Message success style={{textAlign: 'left'}}>
+            <p> Your password has been updated. </p>
+            <p> Redirecting to login page in {this.state.countDown} seconds. </p>
+          </Message>
+        </Grid>
+      )
+    } else {
+      clearInterval(this.seconds)
+      return <Redirect to='/login' />
+    }
+  }
+
+  render = () => {
+    return (
+      <div>
+        { this.state.stage === STAGE_INFO && this.renderInfo() }
+        { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
+        { this.state.stage === STAGE_REDIRECT && this.renderRedirect() }
       </div>
     )
   }

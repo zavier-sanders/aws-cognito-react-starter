@@ -34,6 +34,7 @@ export default class Login extends Component {
     clearInterval(this.seconds)
   }
 
+  /////////////////////// callback for auth lib /////////////////////
   callbacks = loginCallbackFactory({
     onSuccess () {
       this.setState({
@@ -58,29 +59,39 @@ export default class Login extends Component {
     }
   }, this);
 
-  signIn = () => {
+  /////////////////////////// button ////////////////////////
+  handleSubmit = () => {
     this.setState({
       logging: true
     })
     handleSignIn(this.state.username, this.state.password, this.callbacks)
   }
 
-  resendVerificationCode = () => {
-    sendMFAVerificationCode(this.state.code, this.callbacks)
+  handleSubmitVerification = () => {
+    this.setState({
+      logging: true
+    })
+    handleSignIn(this.state.username, this.state.password, this.callbacks)
+  }
+
+  handleResendVerification = () => {
     this.setState({
       countDown: COUNT_DOWN_RESEND
     })
+    sendMFAVerificationCode(this.state.code, this.callbacks)
   }
 
-  renderErrorMessage () {
+  /////////////////////////// render ////////////////////////////
+  renderErrorMessage = (message) => {
     return (
       <Message negative style={{textAlign: 'left'}}>
-        Error: { this.state.errorMessage }
+        Error: { message }
       </Message>
     )
   }
 
-  renderInfo () {
+  renderInfo = () => {
+    const { errorMessage, logging } = this.state
     return (
       <div>
         <Grid
@@ -89,7 +100,7 @@ export default class Login extends Component {
           verticalAlign='middle'
         >
           <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
-            { this.state.errorMessage && this.renderErrorMessage() }
+            { errorMessage && this.renderErrorMessage(errorMessage) }
             <Form size='large'>
               <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
                 <Header as='h2' color='blue' textAlign='left'>
@@ -111,10 +122,10 @@ export default class Login extends Component {
                   onChange={(event) => this.setState({password: event.target.value, errorMessage: ''})}
                 />
                 <Button color='blue' fluid size='large'
-                  onClick={this.signIn}
-                  disabled={this.state.logging}
+                  onClick={this.handleSubmit}
+                  disabled={logging}
                 >
-                  {this.state.logging ? 'Logging in...' : 'Sign In'}
+                  {logging ? 'Logging in...' : 'Sign In'}
                 </Button>
               </Segment>
             </Form>
@@ -127,24 +138,24 @@ export default class Login extends Component {
     )
   }
 
-  renderVerification () {
+  renderVerification = () => {
     return (
       <Verification
         errorMessage={this.state.errorMessage}
         countDown={this.state.countDown}
-        onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
-        onValidate={this.signIn}
-        onResendCode={this.resendVerificationCode}
+        onChange={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
+        onValidate={this.handleSubmitVerification}
+        onResendCode={this.handleResendVerification}
       />
     )
   }
 
-  renderRedirect () {
+  renderRedirect = () => {
     clearInterval(this.seconds)
     return <Redirect to='/' />
   }
 
-  render () {
+  render = () => {
     return (
       <div>
         { this.state.stage === STAGE_INFO && this.renderInfo() }

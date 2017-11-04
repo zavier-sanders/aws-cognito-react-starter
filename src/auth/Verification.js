@@ -30,7 +30,7 @@ export default class Verification extends Component {
                   icon='hashtag'
                   iconPosition='left'
                   placeholder='Code'
-                  onBlur={this.props.onBlur}
+                  onChange={this.props.onChange}
                 />
                 <Button color='blue' fluid onClick={this.props.onValidate}>Validate</Button>
                 <div style={{marginTop: 10}} />

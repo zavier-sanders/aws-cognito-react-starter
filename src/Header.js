@@ -28,6 +28,7 @@ class Header extends Component {
             </Menu.Item>
             <Menu.Menu position='right'>
               <Menu.Item as='a'>Careers</Menu.Item>
+              <Menu.Item as='a'>Price</Menu.Item>
               <Menu.Item position='right'>
                 <Button primary inverted onClick={this.handleSignInClick}>Sign In</Button>
               </Menu.Item>
@@ -48,10 +49,12 @@ class Header extends Component {
       >
         <Container>
           <Menu inverted secondary size='small'>
-            <Menu.Item as='a'>Company</Menu.Item>
+            <Menu.Item>
+              <Link to='/'>LOGO</Link>
+            </Menu.Item>
             <Menu.Menu position='right'>
               <Menu.Item as='a'>Price</Menu.Item>
-              <Menu.Item as='a'>Support</Menu.Item>
+              <Menu.Item as='a'>Account</Menu.Item>
               <Menu.Item position='right'>
                 <Button primary inverted onClick={this.handleSignOutClick}>Sign Out</Button>
               </Menu.Item>
