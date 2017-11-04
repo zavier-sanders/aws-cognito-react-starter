@@ -41,7 +41,9 @@ export default class AppRoute extends Component {
           <PublicRoute userSession={userSession} path='/register' exact component={Register} />
           <PublicRoute userSession={userSession} path='/forget' exact component={Forget} />
           <PublicRoute userSession={userSession} path='/public' exact component={PublicHome} />
+
           <PrivateRoute userSession={userSession} path='/private' exact component={PrivateHome} />
+
           <Redirect to='/public' />)
         </Switch>
       </div>

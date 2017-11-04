@@ -1,11 +1,3 @@
-/*
-Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-    http://aws.amazon.com/apache2.0/
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
-*/
-
 import AWS from 'aws-sdk'
 import { CognitoUserPool, CognitoUserAttribute, AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js'
 import config from './config'
@@ -50,33 +42,7 @@ export function handleSignIn (username, password, callbacks) {
 export function loginCallbackFactory (callbacks, ctx) {
   return {
     onSuccess: (result) => {
-      const loginCred = 'cognito-idp.' + config.aws_cognito_region + '.amazonaws.com/' + config.aws_cognito_user_pools_id
-
-      let credJson = {}
-      let Login = {}
-
-      Login[loginCred] = result.getIdToken().getJwtToken()
-      credJson['IdentityPoolId'] = config.aws_cognito_identity_pool_id
-      credJson['Logins'] = Login
-
-      AWS.config.region = config.aws_cognito_region
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials(credJson)
-
-      AWS.config.credentials.get((error) => {
-        if (error) {
-          return
-        }
-
-        const { accessKeyId, secretAccessKey, sessionToken } = AWS.config.credentials
-        const awsCredentials = {
-          accessKeyId,
-          secretAccessKey,
-          sessionToken
-        }
-        sessionStorage.setItem('awsCredentials', JSON.stringify(awsCredentials))
-
-        callbacks.onSuccess.call(ctx)
-      })
+      callbacks.onSuccess.call(ctx)
     },
 
     onFailure: (error) => {
@@ -97,7 +63,6 @@ export function sendMFAVerificationCode (code, callbacks) {
 
 export function checkLoginError (error) {
   const err = error.toString()
-  console.log(err)
   if (/InvalidParameterException: Missing required parameter USERNAME/.test(err) ||
     (/UserNotFoundException/.test(err)) ||
     (/NotAuthorizedException/.test(err))) {
