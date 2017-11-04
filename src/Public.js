@@ -15,7 +15,7 @@ export default class Public extends Component {
             <Grid.Column width={16}>
               <Header as='h3' style={{ fontSize: '2em' }}>This page is public.</Header>
               <p style={{ fontSize: '1.33em' }}>
-                Anyone can see this page.
+                Anyone can access this page.
               </p>
 
               <Divider />

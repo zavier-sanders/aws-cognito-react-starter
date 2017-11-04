@@ -15,7 +15,7 @@ export default class Private extends Component {
             <Grid.Column width={16}>
               <Header as='h3' style={{ fontSize: '2em' }}>This is the private page</Header>
               <p style={{ fontSize: '1.33em' }}>
-                This page is shown to user only when you they login.
+                This page is shown to user only when they login.
               </p>
 
               <Divider />
