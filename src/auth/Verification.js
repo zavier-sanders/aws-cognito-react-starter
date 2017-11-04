@@ -34,7 +34,7 @@ export default class Verification extends Component {
                 />
                 <Button color='blue' fluid onClick={this.props.onValidate}>Validate</Button>
                 <div style={{marginTop: 10}} />
-                { this.props.countDown > 0 && (<Button color='orange' fluid disabled>Resend code in {this.props.countDown} second</Button>) }
+                { this.props.countDown > 0 && (<Button color='orange' fluid disabled>Resend code in {this.props.countDown} seconds</Button>) }
                 { this.props.countDown === 0 && (<Button color='orange' fluid onClick={this.props.onResendCode}>Resend code</Button>) }
               </Segment>
             </Form>
