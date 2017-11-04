@@ -38,8 +38,8 @@ export default class Register extends Component {
     clearInterval(this.seconds)
   }
 
-  /////////////////////// callback for auth lib /////////////////////
-  // Callback structure here is not consistent with Login and Forget component, 
+  /// //////////////////// callback for auth lib /////////////////////
+  // Callback structure here is not consistent with Login and Forget component,
   // due to the inconsistent design of aws-cognitio api: "onSuccess" vs "error"
   signUpCallback = (error, data) => {
     if (error) {
@@ -82,7 +82,7 @@ export default class Register extends Component {
     }
   }
 
-  /////////////////////////// button ////////////////////////
+  /// //////////////////////// button ////////////////////////
   handleSubmit = () => {
     const { name, email, password, passwordMatch } = this.state
     if (!name || !email || !password || !passwordMatch) {
@@ -120,7 +120,7 @@ export default class Register extends Component {
     handleResendVerificationCode(this.state.email, this.resendCodeCallback)
   }
 
-  //////////////////////// render /////////////////////////
+  /// ///////////////////// render /////////////////////////
 
   checkPasswordMatch = () => {
     return this.state.password === this.state.passwordMatch

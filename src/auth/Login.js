@@ -34,7 +34,7 @@ export default class Login extends Component {
     clearInterval(this.seconds)
   }
 
-  /////////////////////// callback for auth lib /////////////////////
+  /// //////////////////// callback for auth lib /////////////////////
   callbacks = loginCallbackFactory({
     onSuccess () {
       this.setState({
@@ -59,7 +59,7 @@ export default class Login extends Component {
     }
   }, this);
 
-  /////////////////////////// button ////////////////////////
+  /// //////////////////////// button ////////////////////////
   handleSubmit = () => {
     this.setState({
       logging: true
@@ -81,7 +81,7 @@ export default class Login extends Component {
     sendMFAVerificationCode(this.state.code, this.callbacks)
   }
 
-  /////////////////////////// render ////////////////////////////
+  /// //////////////////////// render ////////////////////////////
   renderErrorMessage = (message) => {
     return (
       <Message negative style={{textAlign: 'left'}}>

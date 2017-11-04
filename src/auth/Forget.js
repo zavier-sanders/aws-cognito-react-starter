@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router-dom'
 import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
-import { MSG_PASSWORD_PATTERN, checkPasswordPattern, checkEmailPattern, forgotPasswordFactoryCallback, handleForgotPassword, 
+import { MSG_PASSWORD_PATTERN, checkPasswordPattern, checkEmailPattern, forgotPasswordFactoryCallback, handleForgotPassword,
          handleForgotPasswordReset } from './auth'
 import Verification from './Verification'
 
@@ -35,7 +35,7 @@ export default class Forget extends Component {
     clearInterval(this.seconds)
   }
 
-  /////////////////////// callback for auth lib /////////////////////
+  /// //////////////////// callback for auth lib /////////////////////
   forgotPasswordCallBack = forgotPasswordFactoryCallback({
     onSuccess: () => {
       this.setState({
@@ -56,7 +56,7 @@ export default class Forget extends Component {
     }
   }, this);
 
-  /////////////////////////// button ////////////////////////
+  /// //////////////////////// button ////////////////////////
   handleSubmit = () => {
     const { email, password, passwordMatch } = this.state
     if (!email || !password || !passwordMatch) {
@@ -88,7 +88,7 @@ export default class Forget extends Component {
     handleForgotPassword(this.state.email, this.forgotPasswordCallBack)
   }
 
-  //////////////////////// render /////////////////////////
+  /// ///////////////////// render /////////////////////////
   checkPasswordMatch = () => {
     return this.state.password === this.state.passwordMatch
   }
