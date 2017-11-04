@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
-import AppRoute from '../App'
-import { Segment, Button, Divider, Input, Form, Label, Grid, Header, Message } from 'semantic-ui-react'
-import { Link } from 'react-router-dom'
+import { Segment, Button, Divider, Form, Grid, Header, Message } from 'semantic-ui-react'
+import { Link, Redirect } from 'react-router-dom'
 import { loginCallbackFactory, handleSignIn, sendMFAVerificationCode } from './auth'
+import Verification from './Verification'
 
 const STAGE_INFO = 'STAGE_INFO'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
 const STAGE_REDIRECT = 'STAGE_REDIRECT'
+
+const COUNT_DOWN_RESEND = 30
 
 export default class Login extends Component {
   state = {
@@ -15,51 +17,59 @@ export default class Login extends Component {
     code: '',
 
     stage: STAGE_INFO,
-    enableResend: false
+    countDown: 0,
+
+    logging: false
   };
+
+  seconds = setInterval(() => {
+    if (this.state.countDown > 0) {
+      this.setState({
+        countDown: this.state.countDown - 1
+      })
+    }
+  }, 1000)
+
+  componentWillUnmount () {
+    clearInterval(this.seconds)
+  }
 
   callbacks = loginCallbackFactory({
     onSuccess () {
       this.setState({
-        stage: STAGE_REDIRECT
+        stage: STAGE_REDIRECT,
+        errorMessage: '',
+        logging: false
       })
     },
     onFailure (error) {
       this.setState({
-        errorMessage: error
+        errorMessage: error,
+        logging: false
       })
     },
     mfaRequired () {
       this.setState({
         stage: STAGE_VERIFICATION,
-        enableResend: false
+        countDown: COUNT_DOWN_RESEND,
+        errorMessage: '',
+        logging: false
       })
-      this.countDownResendVerificationCode()
     }
   }, this);
 
-  countDownResendVerificationCode = () => {
-    let counter = 20
-    var seconds = setInterval(() => {
-      if (counter === 0) {
-        clearInterval(seconds)
-        this.setState({
-          enableResend: true
-        })
-      }
-      counter--
-    }, 1000)
-  }
-
   signIn = () => {
+    this.setState({
+      logging: true
+    })
     handleSignIn(this.state.username, this.state.password, this.callbacks)
   }
 
-  requestVerificationCode = () => {
-    this.setState({
-      enableResend: false
-    })
+  resendVerificationCode = () => {
     sendMFAVerificationCode(this.state.code, this.callbacks)
+    this.setState({
+      countDown: COUNT_DOWN_RESEND
+    })
   }
 
   renderErrorMessage () {
@@ -100,7 +110,12 @@ export default class Login extends Component {
                   type='password'
                   onChange={(event) => this.setState({password: event.target.value, errorMessage: ''})}
                 />
-                <Button color='blue' fluid size='large' onClick={this.signIn}>Sign In</Button>
+                <Button color='blue' fluid size='large'
+                  onClick={this.signIn}
+                  disabled={this.state.logging}
+                >
+                  {this.state.logging ? 'Logging in...' : 'Sign In'}
+                </Button>
               </Segment>
             </Form>
             <Divider hidden />
@@ -114,21 +129,19 @@ export default class Login extends Component {
 
   renderVerification () {
     return (
-      <div>
-        <div>
-          <Form.Field>
-            <Input type='text' icon='hashtag' iconPosition='left' placeholder='Verification code' style={{marginRight: 4 + 'em'}}
-              onChange={(event) => this.setState({code: event.target.value, errorMessage: ''})} />
-            { this.state.errorMessage && <Label basic color='red' pointing='left'>{ this.state.errorMessage }</Label> }
-          </Form.Field>
-        </div>
-        <div>
-          <Button primary fluid onClick={this.signIn}>Validate</Button>
-          { this.state.enableResend && (<Button fluid color='purple' onClick={this.requestVerificationCode}>Resend it!</Button>)}
-          { !this.state.enableResend && (<Button fluid loading disabled>Waiting to resend</Button>) }
-        </div>
-      </div>
+      <Verification
+        errorMessage={this.state.errorMessage}
+        countDown={this.state.countDown}
+        onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
+        onValidate={this.signIn}
+        onResendCode={this.resendVerificationCode}
+      />
     )
+  }
+
+  renderRedirect () {
+    clearInterval(this.seconds)
+    return <Redirect to='/' />
   }
 
   render () {
@@ -136,7 +149,7 @@ export default class Login extends Component {
       <div>
         { this.state.stage === STAGE_INFO && this.renderInfo() }
         { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
-        { this.state.stage === STAGE_REDIRECT && (<AppRoute />)}
+        { this.state.stage === STAGE_REDIRECT && this.renderRedirect() }
       </div>
     )
   }

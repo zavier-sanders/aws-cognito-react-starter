@@ -82,14 +82,17 @@ export function sendMFAVerificationCode (code, callbacks) {
 
 export function checkLoginError (error) {
   const err = error.toString()
+  console.log(err)
   if (/InvalidParameterException: Missing required parameter USERNAME$/.test(err) ||
     (/UserNotFoundException?/.test(err)) ||
     (/NotAuthorizedException?/.test(err))) {
     return 'Invalid username or password.'
-  } else if (/CodeMismatchException: Invalid code or auth state for the user.$/.test(err)) {
-    return 'Invalid verification code'
   } else if (/InvalidParameterException: Missing required parameter SMS_MFA_CODE$/.test(err)) {
-    return 'Verficiation code can not be empty'
+    return 'Verficiation code cannot be empty.'
+  } else if (/CodeMismatchException/.test(err)) {
+    return 'Invalid verification code.'
+  } else if (/UserNotConfirmedException/.test(err)) {
+    return 'User is not confirmed.'
   } else {
     return 'Internal Server Error. Please retry.'
   }

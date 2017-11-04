@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
 import { handleResendVerificationCode, handleSubmitVerificationCode, handleSignUp, checkSignUpError } from './auth'
+import Verification from './Verification'
 
 const STAGE_INFO = 'STAGE_INFO'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
@@ -32,40 +33,49 @@ export default class Register extends Component {
     }
   }, 1000)
 
+  componentWillUnmount () {
+    clearInterval(this.seconds)
+  }
+
   signUpCallback = function (err, data) {
     if (err) {
-      const displayError = checkSignUpError(err)
       this.setState({
-        errorMessage: displayError
+        errorMessage: checkSignUpError(err)
       })
-      return
+    } else {
+      this.setState({
+        errorMessage: '',
+        stage: STAGE_VERIFICATION,
+        countDown: COUNT_DOWN_RESEND
+      })
     }
-    this.setState({
-      stage: STAGE_VERIFICATION,
-      countDown: COUNT_DOWN_RESEND
-    })
   }.bind(this);
 
   verificationCallback = function (err, data) {
     if (err) {
       this.setState({
-        errorMessage: 'Invalid Verification Code'
+        errorMessage: 'Invalid verification code.'
       })
-      return
+    } else {
+      this.setState({
+        errorMessage: '',
+        stage: STAGE_REDIRECT,
+        countDown: COUNT_DOWN_REDIRECT
+      })
     }
-    this.setState({
-      stage: STAGE_REDIRECT,
-      countDown: COUNT_DOWN_REDIRECT
-    })
   }.bind(this);
 
   resendCodeCallback = function (err, result) {
     if (err) {
-      return
+      this.setState({
+        errorMessage: 'Resend code fail. Please retry.'
+      })
+    } else {
+      this.setState({
+        errorMessage: '',
+        countDown: COUNT_DOWN_RESEND
+      })
     }
-    this.setState({
-      countDown: COUNT_DOWN_RESEND
-    })
   }.bind(this);
 
   handleSubmit = () => {
@@ -182,35 +192,13 @@ export default class Register extends Component {
 
   renderVerification () {
     return (
-      <div>
-        <Grid
-          textAlign='center'
-          style={{ marginTop: 120 }}
-          verticalAlign='middle'
-        >
-          <Grid.Column style={{ width: 450 }} verticalAlign='middle'>
-            { this.state.errorMessage && this.renderErrorMessage(this.state.errorMessage) }
-            <Form size='large'>
-              <Segment padded='very' style={{backgroundColor: '#fafafa'}}>
-                <Header as='h4' textAlign='left'>
-                  Please check your email and enter the verification code here:
-                </Header>
-                <Form.Input
-                  fluid
-                  icon='hashtag'
-                  iconPosition='left'
-                  placeholder='Code'
-                  onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
-                />
-                <Button color='blue' fluid onClick={this.handleSubmitVerification}>Validate</Button>
-                <div style={{marginTop: 10}} />
-                { this.state.countDown > 0 && (<Button color='orange' fluid disabled>Resend Code in {this.state.countDown} s</Button>) }
-                { this.state.countDown === 0 && (<Button color='orange' fluid onClick={this.resendVerificationCode}>Resend Code</Button>) }
-              </Segment>
-            </Form>
-          </Grid.Column>
-        </Grid>
-      </div>
+      <Verification
+        errorMessage={this.state.errorMessage}
+        countDown={this.state.countDown}
+        onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
+        onValidate={this.handleSubmitVerification}
+        onResendCode={this.resendVerificationCode}
+      />
     )
   }
 
@@ -221,7 +209,7 @@ export default class Register extends Component {
           textAlign='center'
           style={{ marginTop: 120 }}
           verticalAlign='middle'
-      >
+        >
           <Message success style={{textAlign: 'left'}}>
             <p> Your registration has been successful. </p>
             <p> You may now login using the email and password you entered into your registration form. </p>
