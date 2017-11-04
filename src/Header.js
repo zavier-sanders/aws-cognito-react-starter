@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import {handleSignOut, getUserSession} from './auth/auth'
 import { Button, Menu, Segment, Container } from 'semantic-ui-react'
-import { withRouter } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 
 class Header extends Component {
   handleSignOutClick = () => {
@@ -23,10 +23,10 @@ class Header extends Component {
       >
         <Container>
           <Menu inverted secondary size='small'>
-            <Menu.Item as='a'>LOGO COMPANY</Menu.Item>
+            <Menu.Item>
+              <Link to='/'>LOGO</Link>
+            </Menu.Item>
             <Menu.Menu position='right'>
-              <Menu.Item as='a'>Work</Menu.Item>
-              <Menu.Item as='a'>Company</Menu.Item>
               <Menu.Item as='a'>Careers</Menu.Item>
               <Menu.Item position='right'>
                 <Button primary inverted onClick={this.handleSignInClick}>Sign In</Button>
