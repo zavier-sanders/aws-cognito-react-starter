@@ -4,7 +4,7 @@ import { Segment, Button, Divider, Input, Form, Label, Grid, Header, Message } f
 import { Link } from 'react-router-dom'
 import { loginCallbackFactory, handleSignIn, sendMFAVerificationCode } from './auth'
 
-const STAGE_START = 'STAGE_START'
+const STAGE_INFO = 'STAGE_INFO'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
 const STAGE_REDIRECT = 'STAGE_REDIRECT'
 
@@ -14,7 +14,7 @@ export default class Login extends Component {
     password: '',
     code: '',
 
-    stage: STAGE_START,
+    stage: STAGE_INFO,
     enableResend: false
   };
 
@@ -134,7 +134,7 @@ export default class Login extends Component {
   render () {
     return (
       <div>
-        { this.state.stage === STAGE_START && this.renderInfo() }
+        { this.state.stage === STAGE_INFO && this.renderInfo() }
         { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
         { this.state.stage === STAGE_REDIRECT && (<AppRoute />)}
       </div>

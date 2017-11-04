@@ -3,7 +3,7 @@ import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
 import { handleResendVerificationCode, handleSubmitVerificationCode, handleSignUp, checkSignUpError } from './auth'
 
-const STAGE_START = 'STAGE_START'
+const STAGE_INFO = 'STAGE_INFO'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
 const STAGE_REDIRECT = 'STAGE_REDIRECT'
 
@@ -20,9 +20,17 @@ export default class Register extends Component {
     invalidCodeMessage: '',
     errorMessage: '',
 
-    stage: STAGE_START,
-    countDown: COUNT_DOWN_RESEND
+    stage: STAGE_INFO,
+    countDown: 0
   };
+
+  seconds = setInterval(() => {
+    if (this.state.countDown > 0) {
+      this.setState({
+        countDown: this.state.countDown - 1
+      })
+    }
+  }, 1000)
 
   signUpCallback = function (err, data) {
     if (err) {
@@ -33,9 +41,9 @@ export default class Register extends Component {
       return
     }
     this.setState({
-      stage: STAGE_VERIFICATION
+      stage: STAGE_VERIFICATION,
+      countDown: COUNT_DOWN_RESEND
     })
-    this.countDownReset()
   }.bind(this);
 
   verificationCallback = function (err, data) {
@@ -46,16 +54,18 @@ export default class Register extends Component {
       return
     }
     this.setState({
-      stage: STAGE_REDIRECT
+      stage: STAGE_REDIRECT,
+      countDown: COUNT_DOWN_REDIRECT
     })
-    this.countDownReset()
   }.bind(this);
 
   resendCodeCallback = function (err, result) {
     if (err) {
       return
     }
-    this.countDownReset()
+    this.setState({
+      countDown: COUNT_DOWN_RESEND
+    })
   }.bind(this);
 
   handleSubmit = () => {
@@ -103,21 +113,6 @@ export default class Register extends Component {
     return /\S+@\S+\.\S+/.test(this.state.email)
   }
 
-  countDownReset = () => {
-    this.setState({
-      countDown: this.state.stage === STAGE_VERIFICATION ? COUNT_DOWN_RESEND : COUNT_DOWN_REDIRECT
-    })
-    const seconds = setInterval(() => {
-      if (this.state.countDown === 0) {
-        clearInterval(seconds)
-      } else {
-        this.setState({
-          countDown: this.state.countDown - 1
-        })
-      }
-    }, 1000)
-  }
-
   renderErrorMessage (message) {
     return (
       <Message negative style={{textAlign: 'left'}}>
@@ -127,7 +122,6 @@ export default class Register extends Component {
   }
 
   renderInfo () {
-    console.log(this.state)
     return (
       <div>
         <Grid
@@ -209,9 +203,9 @@ export default class Register extends Component {
                   onBlur={(event) => this.setState({code: event.target.value.trim(), errorMessage: ''})}
                 />
                 <Button color='blue' fluid onClick={this.handleSubmitVerification}>Validate</Button>
-                <div style={{marginTop: 10}}/>
-                { this.state.countDown>0 && (<Button color='orange' fluid disabled>Resend Code in {this.state.countDown} s</Button>) }
-                { this.state.countDown===0 && (<Button color='orange' fluid onClick={this.resendVerificationCode}>Resend Code</Button>) }
+                <div style={{marginTop: 10}} />
+                { this.state.countDown > 0 && (<Button color='orange' fluid disabled>Resend Code in {this.state.countDown} s</Button>) }
+                { this.state.countDown === 0 && (<Button color='orange' fluid onClick={this.resendVerificationCode}>Resend Code</Button>) }
               </Segment>
             </Form>
           </Grid.Column>
@@ -223,20 +217,28 @@ export default class Register extends Component {
   renderRedirect () {
     if (this.state.countDown > 0) {
       return (
-        <div>
-          Congratulations.
-          Redirecting to login page in {this.state.countDown} seconds.
-        </div>
+        <Grid
+          textAlign='center'
+          style={{ marginTop: 120 }}
+          verticalAlign='middle'
+      >
+          <Message success style={{textAlign: 'left'}}>
+            <p> Your registration has been successful. </p>
+            <p> You may now login using the email and password you entered into your registration form. </p>
+            <p> Redirecting to login page in {this.state.countDown} seconds. </p>
+          </Message>
+        </Grid>
       )
-    } 
-
-    return <Redirect to='/login' /> 
+    } else {
+      clearInterval(this.seconds)
+      return <Redirect to='/login' />
+    }
   }
 
   render () {
     return (
       <div>
-        { this.state.stage === STAGE_START && this.renderInfo() }
+        { this.state.stage === STAGE_INFO && this.renderInfo() }
         { this.state.stage === STAGE_VERIFICATION && this.renderVerification() }
         { this.state.stage === STAGE_REDIRECT && this.renderRedirect()}
       </div>
