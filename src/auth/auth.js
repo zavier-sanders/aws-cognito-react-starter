@@ -72,7 +72,7 @@ export function checkLoginError (error) {
   } else if (/CodeMismatchException/.test(err)) {
     return 'Invalid verification code.'
   } else if (/UserNotConfirmedException/.test(err)) {
-    return 'User is not confirmed.'
+    return 'User is not verified.'
   } else {
     return 'Internal Server Error. Please retry.'
   }

@@ -12,6 +12,8 @@ const STAGE_REDIRECT = 'STAGE_REDIRECT'
 const COUNT_DOWN_RESEND = 30
 const COUNT_DOWN_REDIRECT = 5
 
+const VERIFICATION_BY_CODE = true
+
 export default class Register extends Component {
   state = {
     name: '',
@@ -47,11 +49,19 @@ export default class Register extends Component {
         errorMessage: checkSignUpError(error)
       })
     } else {
-      this.setState({
-        errorMessage: '',
-        stage: STAGE_VERIFICATION,
-        countDown: COUNT_DOWN_RESEND
-      })
+      if (VERIFICATION_BY_CODE) {
+        this.setState({
+          errorMessage: '',
+          stage: STAGE_VERIFICATION,
+          countDown: COUNT_DOWN_RESEND
+        })
+      } else { // verification by link
+        this.setState({
+          errorMessage: '',
+          stage: STAGE_REDIRECT,
+          countDown: COUNT_DOWN_REDIRECT
+        })
+      }
     }
   }
 
@@ -217,8 +227,8 @@ export default class Register extends Component {
           verticalAlign='middle'
         >
           <Message success style={{textAlign: 'left'}}>
-            <p> Your registration has been successful. </p>
-            <p> You may now login using the email and password you entered into your registration form. </p>
+            { VERIFICATION_BY_CODE && <p> Your registration has been successful. </p> }
+            { !VERIFICATION_BY_CODE && <p> Please check your email and click the link to verify your email. </p> }
             <p> Redirecting to login page in {this.state.countDown} seconds. </p>
           </Message>
         </Grid>
