@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
-import {handleSignOut, getUserSession} from './auth/auth'
+import {handleSignOut, checkUserAuthenticated} from './auth/auth'
 import { Button, Menu, Segment, Container } from 'semantic-ui-react'
 import { Link, withRouter } from 'react-router-dom'
 
 class Header extends Component {
   handleSignOutClick = () => {
     handleSignOut()
-    this.props.history.replace('/login')
+    this.props.history.push('/')
   }
 
   handleSignInClick = () => {
@@ -66,7 +66,7 @@ class Header extends Component {
   }
 
   render () {
-    const userIsLoggedIn = getUserSession()
+    const userIsLoggedIn = checkUserAuthenticated()
     return (
       <div>
         {!userIsLoggedIn && this.renderPublicHeader()}

@@ -199,10 +199,23 @@ export function getUserSession () {
   }
 }
 
+export function checkUserAuthenticated () {
+  cognitoUser = userPool.getCurrentUser()
+  return cognitoUser && cognitoUser.getSession((_err, session) => session && session.isValid())
+}
+
 // current cognitor user, need to check undifined when used
-export function getCurrentUser () {
+export function getCurrentUser (callback) {
   const session = getUserSession()
   if (session) {
-    return cognitoUser
+    cognitoUser.getUserAttributes((err, result) => {
+      let user = {}
+      if (!err) {
+        for (let i = 0; i < result.length; i++) {
+          user[result[i].getName()] = result[i].getValue()
+        }
+      }
+      callback(err, user)
+    })
   }
 }

@@ -14,35 +14,39 @@ import Header from './Header'
 import Login from './auth/Login'
 import Register from './auth/Register'
 import Forget from './auth/Forget'
-import { getUserSession } from './auth/auth'
+import { checkUserAuthenticated } from './auth/auth'
 import 'semantic-ui-css/semantic.css'
 
-const PublicRoute = ({ component: Component, userSession, ...rest }) => (
-  <Route {...rest} render={props => !userSession
-        ? (<Component {...props} />) : (<Redirect to='/private' />)
-    } />
+const PublicRoute = ({ component: Component, isAuthed, ...rest }) => (
+  <Route
+    {...rest}
+    render={props => isAuthed ? (<Redirect to='/private' />) : (<Component {...props} />)}
+  />
 )
 
-const PrivateRoute = ({ component: Component, userSession, ...rest }) => (
-  <Route {...rest} render={props => !userSession
-        ? (<Redirect to='/login' />) : (<Component {...props} />)
-    } />
+const PrivateRoute = ({ component: Component, isAuthed, ...rest }) => (
+  <Route
+    {...rest}
+    render={props => isAuthed ? (<Component {...props} />) : (<Redirect to='/login' />)}
+  />
 )
 
 export default class AppRoute extends Component {
   render () {
-    const userSession = getUserSession()
+    const isAuthed = checkUserAuthenticated()
+    console.log(`User authenticated: ${isAuthed}`)
+
     return (
       <div>
-        <Header redirectPathWhenSignout='/public' />
+        <Header />
         <Switch>
-          <PublicRoute userSession={userSession} path='/' exact component={PublicHome} />
-          <PublicRoute userSession={userSession} path='/login' exact component={Login} />
-          <PublicRoute userSession={userSession} path='/register' exact component={Register} />
-          <PublicRoute userSession={userSession} path='/forget' exact component={Forget} />
-          <PublicRoute userSession={userSession} path='/public' exact component={PublicHome} />
+          <PublicRoute isAuthed={isAuthed} path='/' exact component={PublicHome} />
+          <PublicRoute isAuthed={isAuthed} path='/login' exact component={Login} />
+          <PublicRoute isAuthed={isAuthed} path='/register' exact component={Register} />
+          <PublicRoute isAuthed={isAuthed} path='/forget' exact component={Forget} />
+          <PublicRoute isAuthed={isAuthed} path='/public' exact component={PublicHome} />
 
-          <PrivateRoute userSession={userSession} path='/private' exact component={PrivateHome} />
+          <PrivateRoute isAuthed={isAuthed} path='/private' exact component={PrivateHome} />
 
           <Redirect to='/public' />)
         </Switch>
