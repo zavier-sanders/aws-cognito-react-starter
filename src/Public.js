@@ -13,18 +13,18 @@ export default class Public extends Component {
         <Grid container stackable verticalAlign='middle'>
           <Grid.Row>
             <Grid.Column width={16}>
-              <Header as='h3' style={{ fontSize: '2em' }}>This page is public.</Header>
+              <Header as='h3' style={{ fontSize: '2em' }}>Automated Portfolios.</Header>
               <p style={{ fontSize: '1.33em' }}>
-                Anyone can access this page.
+              Your portfolio. On Autopilot with Machine Intelligence.
               </p>
 
               <Divider />
 
-              <Header as='h3'>We Help Companies and Companions</Header>
-              <p>
+              <Header as='h3'><a href="/login">Sign In to get started</a></Header>
+              {/* <p>
                 We can give your company superpowers to do things that they never thought possible. Let us delight
                 your customers and empower your needs... through pure data analytics.
-              </p>
+              </p> */}
             </Grid.Column>
           </Grid.Row>
         </Grid>

@@ -24,13 +24,12 @@ class Header extends Component {
         <Container>
           <Menu inverted secondary size='small'>
             <Menu.Item>
-              <Link to='/'>LOGO</Link>
+              <Link to='/'><img style={{paddingTop: 5, height: 35}} className="logo" src="./logo.png" /></Link>
             </Menu.Item>
             <Menu.Menu position='right'>
-              <Menu.Item as='a'>Careers</Menu.Item>
-              <Menu.Item as='a'>Price</Menu.Item>
+              {/* <Menu.Item as='a'>Report</Menu.Item> */}
               <Menu.Item position='right'>
-                <Button primary inverted onClick={this.handleSignInClick}>Sign In</Button>
+                <Button inverted onClick={this.handleSignInClick}>Sign In</Button>
               </Menu.Item>
             </Menu.Menu>
           </Menu>
@@ -50,13 +49,13 @@ class Header extends Component {
         <Container>
           <Menu inverted secondary size='small'>
             <Menu.Item>
-              <Link to='/'>LOGO</Link>
+              <Link to='/'><img style={{paddingTop: 5, height: 35}} className="logo" src="./logo.png" /></Link>
             </Menu.Item>
             <Menu.Menu position='right'>
-              <Menu.Item as='a'>Price</Menu.Item>
-              <Menu.Item as='a'>Account</Menu.Item>
+              <Menu.Item as='a'>Report</Menu.Item>
+              {/* <Menu.Item as='a'>Account</Menu.Item> */}
               <Menu.Item position='right'>
-                <Button primary inverted onClick={this.handleSignOutClick}>Sign Out</Button>
+                <Button inverted onClick={this.handleSignOutClick}>Sign Out</Button>
               </Menu.Item>
             </Menu.Menu>
           </Menu>

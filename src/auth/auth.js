@@ -71,9 +71,11 @@ export function checkLoginError (error) {
     return 'Verficiation code cannot be empty.'
   } else if (/CodeMismatchException/.test(err)) {
     return 'Invalid verification code.'
-  } else if (/UserNotConfirmedException/.test(err)) {
+  } 
+  else if (/UserNotConfirmedException/.test(err)) {
     return 'User is not verified.'
-  } else {
+  } 
+  else {
     return 'Internal Server Error. Please retry.'
   }
 }
@@ -105,6 +107,14 @@ export function checkSignUpError (error) {
     return MSG_SERVER_ERROR
   }
 }
+
+// export function saveRobinhoodInfo (email, code, robinhoodCallback) {
+//   cognitoUser = new CognitoUser({
+//     Username: username,
+//     Pool: userPool
+//   })
+//   cognitoUser.confirmRegistration(verificationCode, true, robinhoodCallback)
+// }
 
 export function handleSubmitVerificationCode (username, verificationCode, verificationCallback) {
   cognitoUser = new CognitoUser({
