@@ -24,7 +24,7 @@ class Header extends Component {
         <Container>
           <Menu inverted secondary size='small'>
             <Menu.Item>
-              <Link to='/'><img style={{paddingTop: 5, height: 35}} className="logo" src="./logo.png" /></Link>
+              <Link to='/'><h3 className="logo">Easy Bot Leads</h3></Link>
             </Menu.Item>
             <Menu.Menu position='right'>
               {/* <Menu.Item as='a'>Report</Menu.Item> */}
@@ -49,10 +49,16 @@ class Header extends Component {
         <Container>
           <Menu inverted secondary size='small'>
             <Menu.Item>
-              <Link to='/'><img style={{paddingTop: 5, height: 35}} className="logo" src="./logo.png" /></Link>
+              {/* <Link to='/'><img style={{paddingTop: 5, height: 35}} className="logo" src="./logo.png" /></Link> */}
+              <Link to='/'><h3 className="logo">Easy Bot Leads</h3></Link>
             </Menu.Item>
             <Menu.Menu position='right'>
-              <Menu.Item as='a'>Report</Menu.Item>
+              <Menu.Item>
+                <Link to='/leads'><p>Leads</p></Link>
+              </Menu.Item>
+              <Menu.Item>
+                <Link to='/account'><p>Account</p></Link>
+              </Menu.Item>
               {/* <Menu.Item as='a'>Account</Menu.Item> */}
               <Menu.Item position='right'>
                 <Button inverted onClick={this.handleSignOutClick}>Sign Out</Button>

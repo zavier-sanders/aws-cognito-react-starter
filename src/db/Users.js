@@ -12,7 +12,7 @@ export function getUserInfo(data) {
   const params = {
     TableName: CONFIG.DDBUserTable,
     Key: {
-      "userId": data,
+      "accountId": data,
       "status": 'active'
     }
   };
@@ -29,14 +29,13 @@ export function getUserInfo(data) {
   return promise;
 }
 
-export function saveRobinhoodUser(userId, email, password, callback) {
+export function saveApplicationUser(accountId, email, callback) {
   let params = {
       TableName: CONFIG.DDBUserTable,
       Item:{
-          "userId": userId,
-          "email": email,
-          "password": password,      
+          "accountId": accountId,
           "status": 'active',
+          "email": email,
           "created": Math.floor(new Date().getTime() / 1000),
       }
   };

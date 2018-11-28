@@ -83,15 +83,32 @@ export function checkLoginError (error) {
 // ======================================================
 // Signup methods
 // ======================================================
-export function handleSignUp (email, password, username, signUpCallback) {
+export function handleSignUp (email, password, name, accountId, signUpCallback) {
+
   const attributeList = []
+
   const dataEmail = {
     Name: 'email',
     Value: email
   }
+
+  const dataName = {
+    Name: 'name',
+    Value: name
+  }
+
+  const dataaccountId = {
+    Name: 'custom:accountId',
+    Value: accountId
+  }
+
   const attributeEmail = new CognitoUserAttribute(dataEmail)
+  const attributeName = new CognitoUserAttribute(dataName)
+  const attributeaccountId = new CognitoUserAttribute(dataaccountId)
 
   attributeList.push(attributeEmail)
+  attributeList.push(attributeName)
+  attributeList.push(attributeaccountId)
 
   userPool.signUp(email, password, attributeList, null, signUpCallback)
 }

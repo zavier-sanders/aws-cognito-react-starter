@@ -3,9 +3,10 @@ import { Segment, Button, Form, Grid, Header, Message } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
 import { MSG_PASSWORD_PATTERN, checkEmailPattern, checkPasswordPattern, checkNamePattern, loginCallbackFactory, handleSignIn,
          handleResendVerificationCode, handleSubmitVerificationCode, handleSignUp, checkSignUpError } from './auth'
-import { saveRobinhoodUser } from '../db/Robinhood'
+import { saveApplicationUser } from '../db/Users'
 import Verification from './Verification'
 import Robinhood from './Robinhood'
+const uuidv4 = require('uuid/v4');
 
 const STAGE_INFO = 'STAGE_INFO'
 const STAGE_VERIFICATION = 'STAGE_VERIFICATION'
@@ -15,7 +16,7 @@ const STAGE_REDIRECT = 'STAGE_REDIRECT'
 const COUNT_DOWN_RESEND = 30
 const COUNT_DOWN_REDIRECT = 5
 
-const VERIFICATION_BY_CODE = false
+const VERIFICATION_BY_CODE = true
 
 export default class Register extends Component {
   constructor() {
@@ -24,9 +25,9 @@ export default class Register extends Component {
     this.username;
     this.password;
 
-    this.robinhoodCallback = this.robinhoodCallback.bind(this);
+    this.saveUserCallback = this.saveUserCallback.bind(this);
     this.handleSubmitRobinhood = this.handleSubmitRobinhood.bind(this);
-    this.saveRobinhoodUser = saveRobinhoodUser.bind(this);
+    this.saveApplicationUser = saveApplicationUser.bind(this);
   }
   
   state = {
@@ -37,6 +38,7 @@ export default class Register extends Component {
     code: '',
     invalidCodeMessage: '',
     errorMessage: '',
+    accountId: '',
 
     stage: STAGE_INFO,
     countDown: 0,
@@ -69,6 +71,7 @@ export default class Register extends Component {
       if (VERIFICATION_BY_CODE) {
         this.setState({
           errorMessage: '',
+          accountId: this.accountId,
           stage: STAGE_VERIFICATION,
           countDown: COUNT_DOWN_RESEND
         })
@@ -112,27 +115,21 @@ export default class Register extends Component {
         errorMessage: 'Invalid verification code.'
       })
     } else {
-      this.setState({
-        errorMessage: '',
-        stage: STAGE_ROBINHOOD,
-        countDown: COUNT_DOWN_REDIRECT
-      })
+      saveApplicationUser(this.state.accountId, this.state.email, this.saveUserCallback)
     }
   }
   
-  robinhoodCallback = (error, data) => {
+  saveUserCallback = (error, data) => {
     if (error) {
       this.setState({
-        errorMessage: 'Invalid email and password combination.'
+        errorMessage: 'Error saving new user.'
       })
     } else {
-      // console.log(this.username, this.password, this.state.email, this.state.password);
-      handleSignIn(this.username, this.password, this.callbacks)
-      // this.setState({
-      //   errorMessage: '',
-      //   stage: STAGE_REDIRECT,
-      //   countDown: COUNT_DOWN_REDIRECT
-      // })
+      this.setState({
+        errorMessage: '',
+        stage: STAGE_REDIRECT,
+        countDown: COUNT_DOWN_REDIRECT
+      })
     }
   }
 
@@ -163,11 +160,13 @@ export default class Register extends Component {
     } else {
       this.username = this.state.email;
       this.password = this.state.password;
+      this.accountId = uuidv4();
 
       handleSignUp(
         this.state.email,
         this.state.password,
         this.state.name,
+        this.accountId,
         this.signUpCallback
       )
     }
@@ -189,31 +188,7 @@ export default class Register extends Component {
         errorMessage: 'Please enter a email and password.'
       })
     } else {
-      // Log into Robinhood
-      fetch(`https://api.robinhood.com/api-token-auth/`, {
-          method: 'POST',
-          mode: "no-cors", // no-cors, cors, *same-origin
-          headers: new Headers ({
-            "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate",
-            "Accept-Language": "en;q=1, fr;q=0.9, de;q=0.8, ja;q=0.7, nl;q=0.6, it;q=0.5",
-            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8; application/json",
-            "X-Robinhood-API-Version": "1.152 .0",
-            "Connection": "keep-alive",
-            "User-Agent": "Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)"
-          }),
-          body: `password=${this.state.robinhoodPassword}&username=${this.state.robinhoodEmail}`
-        }).then(function(response) {
-          console.log(response);
-          return;
-        }).catch(error => { 
-          this.setState({
-            errorMessage: 'Invalid email and password combination.'
-          })
-          console.error('Error:', error)
-        });
-
-      saveRobinhoodUser(this.state.email, this.state.robinhoodEmail, this.state.robinhoodPassword, this.robinhoodCallback)
+      saveApplicationUser(this.state.email, this.robinhoodCallback)
     }
   }
 
@@ -351,7 +326,7 @@ export default class Register extends Component {
       )
     } else {
       clearInterval(this.seconds)
-      return <Redirect to='/' />
+      return <Redirect to='/login' />
     }
   }
 

@@ -15,6 +15,8 @@ import Login from './auth/Login'
 import Register from './auth/Register'
 import Forget from './auth/Forget'
 import { checkUserAuthenticated } from './auth/auth'
+import LeadsPage from './pages/leadsPage';
+import AccountPage from './pages/accountPage';
 import 'semantic-ui-css/semantic.css'
 
 const PublicRoute = ({ component: Component, isAuthed, ...rest }) => (
@@ -47,6 +49,8 @@ export default class AppRoute extends Component {
           <PublicRoute isAuthed={isAuthed} path='/public' exact component={PublicHome} />
 
           <PrivateRoute isAuthed={isAuthed} path='/private' exact component={PrivateHome} />
+          <PrivateRoute isAuthed={isAuthed} path='/leads' exact component={LeadsPage} />
+          <PrivateRoute isAuthed={isAuthed} path='/account' exact component={AccountPage} />
 
           <Redirect to='/public' />)
         </Switch>

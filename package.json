@@ -9,7 +9,8 @@
     "react-router-dom": "^4.2.2",
     "react-scripts": "1.0.14",
     "semantic-ui-css": "^2.2.12",
-    "semantic-ui-react": "^0.75.1"
+    "semantic-ui-react": "^0.75.1",
+    "uuid": "^3.3.2"
   },
   "scripts": {
     "start": "react-scripts start",

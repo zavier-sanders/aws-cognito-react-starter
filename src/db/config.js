@@ -1,6 +1,6 @@
 "use strict";
 export const CONFIG = {
-    DDBUserTable: 'robinhood-users',
-    CognitoIdentityPool: "us-east-1:62547d3b-be94-4a0c-a7fb-c95a586732f9",
-    Region: "us-east-1",
+    DDBUserTable: 'easybotleads-users-dev',
+    CognitoIdentityPool: "us-west-2:08a0bd28-c4a8-43ed-8fe4-16dae19c0175",
+    Region: "us-west-2",
 };

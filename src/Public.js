@@ -13,9 +13,9 @@ export default class Public extends Component {
         <Grid container stackable verticalAlign='middle'>
           <Grid.Row>
             <Grid.Column width={16}>
-              <Header as='h3' style={{ fontSize: '2em' }}>Automated Portfolios.</Header>
+              <Header as='h3' style={{ fontSize: '2em' }}>Automated Lead Gen System.</Header>
               <p style={{ fontSize: '1.33em' }}>
-              Your portfolio. On Autopilot with Machine Intelligence.
+              Your leads. On Autopilot with Facebook Messenger Chatbots.
               </p>
 
               <Divider />
