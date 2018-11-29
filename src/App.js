@@ -16,6 +16,7 @@ import Register from './auth/Register'
 import Forget from './auth/Forget'
 import { checkUserAuthenticated } from './auth/auth'
 import LeadsPage from './pages/leadsPage';
+import SearchPage from './pages/searchPage';
 import AccountPage from './pages/accountPage';
 import 'semantic-ui-css/semantic.css'
 
@@ -50,6 +51,7 @@ export default class AppRoute extends Component {
 
           <PrivateRoute isAuthed={isAuthed} path='/private' exact component={PrivateHome} />
           <PrivateRoute isAuthed={isAuthed} path='/leads' exact component={LeadsPage} />
+          <PrivateRoute isAuthed={isAuthed} path='/search' exact component={SearchPage} />
           <PrivateRoute isAuthed={isAuthed} path='/account' exact component={AccountPage} />
 
           <Redirect to='/public' />)

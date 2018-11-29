@@ -54,6 +54,9 @@ class Header extends Component {
             </Menu.Item>
             <Menu.Menu position='right'>
               <Menu.Item>
+                <Link to='/search'><p>Search</p></Link>
+              </Menu.Item>
+              <Menu.Item>
                 <Link to='/leads'><p>Leads</p></Link>
               </Menu.Item>
               <Menu.Item>
